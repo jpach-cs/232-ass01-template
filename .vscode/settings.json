@@ -1,0 +1,20 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "type_traits": "c",
+        "stdbool.h": "c",
+        "assert.h": "c",
+        "main.h": "c",
+        "tests.h": "c",
+        "unity.h": "c",
+        "string.h": "c",
+        "caesar.h": "c"
+    },
+    "makefile.configureOnOpen": false,
+    "workbench.colorCustomizations": 
+    {
+        //"titleBar.activeBackground": "#eeff0081", // Fioletowy dla Backendu
+        //"statusBar.background": "#451e77",
+        //"titleBar.inactiveBackground": "#eeff0081"
+    }
+}
