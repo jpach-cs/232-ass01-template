@@ -11,6 +11,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout student template repository
+      uses: actions/checkout@v4
+
+    - name: Install 32-bit compilation tools (multilib)
+      run: |
+        sudo dpkg --add-architecture i386
+        sudo apt-get update
+        sudo apt-get install -y gcc-multilib g++-multilib
+
+    - name: Compile student code with pre-compiled tests.o
+      run: |
+        # Kompilujemy z flagą -m32 (zgodnie z architekturą tests.o) 
+        # oraz wskazujemy folder inc/src dla nagłówków
+        gcc -Wall -m32 -Isrc src/code.c lib/unity.o tests/tests.o -o run_tests
+
+    - name: Execute Test Binary
+      run: |
+        ./run_tests
+
+
+#ddd
+
+name: Run Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
     - name: Checkout student repository
       uses: actions/checkout@v4
 
@@ -62,7 +97,7 @@ jobs:
     - name: Compile student code with pre-compiled test
       run: |
         # Kompilacja kodu studenta z pobranym plikiem testowym i flagą 32-bitową
-        gcc -Wall -m32 -Isrc src/code.c tests/tests.o -o run_tests
+        gcc -Wall -m32 -Isrc src/code.c  lib/unity.o tests/tests.o -o run_tests
 
     - name: Execute Test Binary
       run: |
