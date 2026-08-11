@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout student template repository
+    - name: Checkout student repository
       uses: actions/checkout@v4
 
     - name: Install 32-bit compilation tools (multilib)
@@ -20,10 +20,48 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gcc-multilib g++-multilib
 
-    - name: Compile student code with pre-compiled tests.o
+    - name: Download and update test binary if changed
       run: |
-        # Kompilujemy z flagą -m32 (zgodnie z architekturą tests.o) 
-        # oraz wskazujemy folder inc/src dla nagłówków
+        mkdir -p tests
+
+        # 1. Automatyczne wykrycie numeru zadania z nazwy repo (np. ass01 -> 01)
+        TASK_NUM=$(echo "${{ github.event.repository.name }}" | grep -oP '(ass|lab)\K[0-9]+')
+        if [ -z "$TASK_NUM" ]; then
+          TASK_NUM="01"
+        fi
+
+        echo "Wykryto numer zadania/labu: $TASK_NUM"
+
+        # 2. Pobieranie najnowszego pliku do lokalizacji tymczasowej
+        TEST_URL="https://raw.githubusercontent.com/jpach-cs/232-all-public-tests/main/tests${TASK_NUM}.o"
+        echo "Pobieranie testu z: $TEST_URL"
+        curl -L -s -o /tmp/new_test.o "$TEST_URL"
+
+        # 3. Sprawdzenie poprawności pobrania (zabezpieczenie przed błędem 404)
+        if [ ! -s /tmp/new_test.o ]; then
+          echo "BŁĄD: Nie udało się pobrać pliku testowego lub plik jest pusty!"
+          exit 1
+        fi
+
+        # 4. Inteligentne podmienianie pliku na bazie sumy kontrolnej MD5
+        if [ ! -f tests/tests.o ]; then
+          echo "Brak lokalnego pliku tests/tests.o - kopiuję nowy."
+          cp /tmp/new_test.o tests/tests.o
+        else
+          OLD_MD5=$(md5sum tests/tests.o | awk '{print $1}')
+          NEW_MD5=$(md5sum /tmp/new_test.o | awk '{print $1}')
+
+          if [ "$OLD_MD5" != "$NEW_MD5" ]; then
+            echo "Wykryto nowszą wersję testu w publicznym repozytorium! Aktualizuję."
+            cp /tmp/new_test.o tests/tests.o
+          else
+            echo "Lokalny plik tests/tests.o jest aktualny. Brak zmian."
+          fi
+        fi
+
+    - name: Compile student code with pre-compiled test
+      run: |
+        # Kompilacja kodu studenta z pobranym plikiem testowym i flagą 32-bitową
         gcc -Wall -m32 -Isrc src/code.c tests/tests.o -o run_tests
 
     - name: Execute Test Binary

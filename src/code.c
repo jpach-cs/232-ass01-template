@@ -7,5 +7,9 @@
 
 int getZero()
 {
+    return 0;    
+}
+int getOne()
+{
     return 1;    
 }
