@@ -6,7 +6,8 @@
             "name": "C: gcc.exe build and debug (external Console)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}\\..\\bin\\${fileBasenameNoExtension}.exe",
+            //"program": "${fileDirname}\\..\\bin\\${fileBasenameNoExtension}.exe",
+            "program": "${fileDirname}\\..\\bin\\main.exe",
             "args": ["1","2"], // argues!
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
